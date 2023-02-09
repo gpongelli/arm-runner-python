@@ -60,6 +60,13 @@ jobs:
             echo "IMAGE_NAME_SUFFIX=${GITHUB_REF//\//-}-${{ matrix.target }}" >> $GITHUB_OUTPUT
           fi
 
+      - name: Split Action
+        uses: JungWinter/split@v2.1.0
+        id: split
+        with:
+          msg: ${{ matrix.python-sw }}
+          separator: '.'
+
       - name: Create release image
         uses: pguyot/arm-runner-action@v2
         id: arm_runner_install
@@ -95,6 +102,11 @@ jobs:
             echo 'LD_LIBRARY_PATH=/opt/build_python/installed/lib:$LD_LIBRARY_PATH' >> /home/pi/.bashrc
             sudo echo 'PATH=/opt/build_python/installed/bin:$PATH' >> /root/.bashrc
             sudo echo 'LD_LIBRARY_PATH=/opt/build_python/installed/lib:$LD_LIBRARY_PATH' >> /root/.bashrc
+            ln -s /opt/build_python/installed/bin/python${{ steps.split.outputs._0 }}.${{ steps.split.outputs._1 }} /usr/local/bin/python3
+            ln -s /opt/build_python/installed/bin/python${{ steps.split.outputs._0 }}.${{ steps.split.outputs._1 }}-config /opt/build_python/installed/bin/python3-config
+            ln -s /opt/build_python/installed/bin/pip${{ steps.split.outputs._0 }}.${{ steps.split.outputs._1 }} /usr/local/bin/pip3
+            rm -rdf /opt/build_python/Python-${{ matrix.python-sw }}.tar.xz
+            rm -rdf /opt/build_python/Python-${{ matrix.python-sw }}/
             sudo apt-get autoremove --purge -y
             sudo apt-get clean
 

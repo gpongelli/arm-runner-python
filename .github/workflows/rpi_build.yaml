@@ -14,10 +14,11 @@ permissions:
   id-token: write
 
 jobs:
-  build:
+  create_image:
     name: 🏗️ Build on ${{ matrix.arch }} - py${{ matrix.python-sw }}
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-sw: [ "3.11.1", "3.10.9", "3.9.16", "3.8.16" ]
         arch: [ armv6l, armv7l, aarch64 ]
@@ -44,28 +45,32 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Define the image name
-        id: image_and_branch_name
-        run: |
-          if [ ${GITHUB_REF/refs\/tags\//} != ${GITHUB_REF} ]; then
-            echo "LOCAL_BRANCH=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
-            echo "RELEASE_NAME=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
-            echo "IMAGE_NAME_SUFFIX=${GITHUB_REF/refs\/tags\//}-${{ matrix.target }}" >> $GITHUB_OUTPUT
-          elif [ ${GITHUB_REF/refs\/heads\//} != "${GITHUB_REF}" ]; then
-            echo "LOCAL_BRANCH=${GITHUB_REF/refs\/heads\//}" >> $GITHUB_OUTPUT
-            echo "RELEASE_NAME=${GITHUB_REF/refs\/heads\//}" >> $GITHUB_OUTPUT
-            echo "IMAGE_NAME_SUFFIX=${GITHUB_REF/refs\/heads\//}-${{ matrix.target }}" >> $GITHUB_OUTPUT
-          else
-            echo "LOCAL_BRANCH=${GITHUB_REF}" >> $GITHUB_OUTPUT
-            echo "IMAGE_NAME_SUFFIX=${GITHUB_REF//\//-}-${{ matrix.target }}" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Split Action
+      - name: Split Python version
         uses: JungWinter/split@v2.1.0
         id: split
         with:
           msg: ${{ matrix.python-sw }}
           separator: '.'
+
+      - id: get_short_sha
+        uses: actions/github-script@0.9.0
+        with:
+          script: |
+            const short_sha = '${{ github.sha }}'.substr(0, 7)
+            core.setOutput('short_sha', short_sha)
+
+      - name: Define the image name
+        id: image_and_branch_name
+        run: |
+          if [ ${GITHUB_REF/refs\/tags\//} != ${GITHUB_REF} ]; then
+            echo "RELEASE_NAME=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
+            echo "IMAGE_NAME_SUFFIX=${GITHUB_REF/refs\/tags\//}-${{ matrix.arch }}-py${{ steps.split.outputs._0 }}${{ steps.split.outputs._1 }}" >> $GITHUB_OUTPUT
+          elif [ ${GITHUB_REF/refs\/heads\//} != "${GITHUB_REF}" ]; then
+            echo "RELEASE_NAME=${GITHUB_REF/refs\/heads\//}" >> $GITHUB_OUTPUT
+            echo "IMAGE_NAME_SUFFIX=${GITHUB_REF/refs\/heads\//}-${{ steps.get_short_sha.outputs.short_sha }}-${{ matrix.arch }}-py${{ steps.split.outputs._0 }}${{ steps.split.outputs._1 }}" >> $GITHUB_OUTPUT
+          else
+            echo "IMAGE_NAME_SUFFIX=${GITHUB_REF//\//-}-${{ matrix.arch }}-py${{ steps.split.outputs._0 }}${{ steps.split.outputs._1 }}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Create release image
         uses: pguyot/arm-runner-action@v2
@@ -129,8 +134,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           token: ${{ secrets.make_gh_release_token }}
-          name: ${{ steps.image_and_branch_name.outputs.RELEASE_NAME }}
+          name: ${{ steps.image_and_branch_name.outputs.IMAGE_NAME_SUFFIX }}
           body: RPI ${{ matrix.arch }} image with Python ${{ matrix.python-sw }}
-          files: ${{ steps.image_and_branch_name.outputs.RELEASE_NAME }}-*.img.xz/${{ steps.image_and_branch_name.outputs.RELEASE_NAME }}-*.img.xz
+          files: ${{ steps.image_and_branch_name.outputs.IMAGE_NAME_SUFFIX }}.img.xz
           draft: false
           prerelease: false

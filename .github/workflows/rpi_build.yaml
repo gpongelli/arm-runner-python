@@ -103,10 +103,6 @@ jobs:
             ./configure --enable-shared --disable-test-modules --prefix=/opt/build_python/installed
             make -j 8 altinstall
             tree -Capug /opt/build_python/installed
-            echo 'PATH=/opt/build_python/installed/bin:$PATH' >> /home/pi/.bashrc
-            echo 'LD_LIBRARY_PATH=/opt/build_python/installed/lib:$LD_LIBRARY_PATH' >> /home/pi/.bashrc
-            sudo echo 'PATH=/opt/build_python/installed/bin:$PATH' >> /root/.bashrc
-            sudo echo 'LD_LIBRARY_PATH=/opt/build_python/installed/lib:$LD_LIBRARY_PATH' >> /root/.bashrc
             ln -s /opt/build_python/installed/bin/python${{ steps.split.outputs._0 }}.${{ steps.split.outputs._1 }} /usr/local/bin/python3
             ln -s /opt/build_python/installed/bin/python${{ steps.split.outputs._0 }}.${{ steps.split.outputs._1 }}-config /opt/build_python/installed/bin/python3-config
             ln -s /opt/build_python/installed/bin/pip${{ steps.split.outputs._0 }}.${{ steps.split.outputs._1 }} /usr/local/bin/pip3

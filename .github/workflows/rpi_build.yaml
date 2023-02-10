@@ -59,7 +59,7 @@ jobs:
             const short_sha = '${{ github.sha }}'.substr(0, 7)
             core.setOutput('short_sha', short_sha)
 
-      - name: Define the image name
+      - name: Define the names
         id: image_and_branch_name
         run: |
           if [ ${GITHUB_REF/refs\/tags\//} != ${GITHUB_REF} ]; then
@@ -69,6 +69,7 @@ jobs:
             echo "RELEASE_NAME=${GITHUB_REF/refs\/heads\//}" >> $GITHUB_OUTPUT
             echo "IMAGE_NAME_SUFFIX=${GITHUB_REF/refs\/heads\//}-${{ steps.get_short_sha.outputs.short_sha }}-${{ matrix.arch }}-py${{ steps.split.outputs._0 }}${{ steps.split.outputs._1 }}" >> $GITHUB_OUTPUT
           else
+            echo "RELEASE_NAME=${GITHUB_REF}" >> $GITHUB_OUTPUT
             echo "IMAGE_NAME_SUFFIX=${GITHUB_REF//\//-}-${{ matrix.arch }}-py${{ steps.split.outputs._0 }}${{ steps.split.outputs._1 }}" >> $GITHUB_OUTPUT
           fi
 
@@ -130,8 +131,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           token: ${{ secrets.make_gh_release_token }}
-          name: ${{ steps.image_and_branch_name.outputs.IMAGE_NAME_SUFFIX }}
-          body: RPI ${{ matrix.arch }} image with Python ${{ matrix.python-sw }}
+          name: ${{ steps.image_and_branch_name.outputs.RELEASE_NAME }}
+          body: RaspiOS lite images for listed ARM architectures with Python built from sourcecode.
           files: ${{ steps.image_and_branch_name.outputs.IMAGE_NAME_SUFFIX }}.img.xz
           draft: false
           prerelease: false

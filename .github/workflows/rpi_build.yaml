@@ -94,7 +94,7 @@ jobs:
             mkdir -p dist
             python3 --version
             sudo apt update
-            sudo apt install -y --no-install-recommends autoconf automake bison byacc build-essential cscope diffstat flex gcc gettext git indent intltool libasound2-dev libatlas-base-dev libffi-dev libgdbm-dev libgfortran5 liblapack-dev libmpg123-dev libncurses5-dev libnss3-dev libopenblas-dev libssl-dev libtool openssl patch patchutils rcs swig systemtap tree universal-ctags update-alternatives wget xz-utils zlib1g-dev zram-tools
+            sudo apt install -y --no-install-recommends autoconf automake bison byacc build-essential cscope diffstat dpkg flex gcc gettext git indent intltool libasound2-dev libatlas-base-dev libffi-dev libgdbm-dev libgfortran5 liblapack-dev libmpg123-dev libncurses5-dev libnss3-dev libopenblas-dev libssl-dev libtool openssl patch patchutils rcs swig systemtap tree universal-ctags wget xz-utils zlib1g-dev zram-tools
             mkdir -p /opt/build_python/installed
             cd /opt/build_python
             wget https://www.python.org/ftp/python/${{ matrix.python-sw }}/Python-${{ matrix.python-sw }}.tar.xz > /dev/null 2>&1

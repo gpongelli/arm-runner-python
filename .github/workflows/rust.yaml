@@ -88,8 +88,9 @@ jobs:
             sudo apt update
             sudo apt install -y --no-install-recommends autoconf automake bison byacc build-essential cscope curl diffstat dpkg flex gcc gettext git indent intltool libasound2-dev libatlas-base-dev libffi-dev libgdbm-dev libgfortran5 liblapack-dev libmpg123-dev libncurses5-dev libnss3-dev libopenblas-dev libssl-dev libtool openssl patch patchutils rcs swig systemtap tree universal-ctags wget xz-utils zlib1g-dev zram-tools
             curl https://sh.rustup.rs -sSf | bash -s -- -y
-            sudo cat $HOME/.cargo/env > /etc/profile.d/rust.sh
+            cat $HOME/.cargo/env > /etc/profile.d/rust.sh
             find / -iname rustc
+            source /etc/profile.d/rust.sh
             rustc --version
             echo 'export PATH=$NEW_PATH' >> /etc/profile.d/env.sh
             echo 'export LD_LIBRARY_PATH=$NEW_LD_LIB_PATH' >> /etc/profile.d/env.sh

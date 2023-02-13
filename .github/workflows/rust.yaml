@@ -92,7 +92,7 @@ jobs:
             sudo apt install -y --no-install-recommends autoconf automake bison byacc build-essential cscope curl diffstat dpkg flex gcc gettext git indent intltool libasound2-dev libatlas-base-dev libffi-dev libgdbm-dev libgfortran5 liblapack-dev libmpg123-dev libncurses5-dev libnss3-dev libopenblas-dev libssl-dev libtool openssl patch patchutils rcs swig systemtap tree universal-ctags wget xz-utils zlib1g-dev zram-tools
             export CARGO_HOME=$NEW_CARGO_HOME
             export RUSTUP_HOME=$NEW_RUSTUP_HOME
-            curl https://sh.rustup.rs -sSf | bash -s -- -y
+            curl https://sh.rustup.rs -sSf | sudo bash -s -- -y
             [ -d $NEW_CARGO_HOME/.cargo ] || cat $NEW_CARGO_HOME/.cargo/env > /etc/profile.d/rust.sh
             [ -f $NEW_CARGO_HOME/env ] || cat $NEW_CARGO_HOME/env > /etc/profile.d/rust.sh
             export PATH=$NEW_CARGO_HOME/bin:$PATH

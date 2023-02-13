@@ -100,7 +100,7 @@ jobs:
             mkdir -p dist
             python3 --version
             sudo apt update
-            sudo apt install -y --no-install-recommends autoconf automake bison byacc build-essential cscope diffstat dpkg flex gcc gettext git indent intltool libasound2-dev libatlas-base-dev libffi-dev libgdbm-dev libgfortran5 liblapack-dev libmpg123-dev libncurses5-dev libnss3-dev libopenblas-dev libssl-dev libtool openssl patch patchutils rcs swig systemtap tree universal-ctags wget xz-utils zlib1g-dev zram-tools
+            sudo apt install -y --no-install-recommends autoconf automake bison byacc build-essential cscope curl diffstat dpkg flex gcc gettext git indent intltool libasound2-dev libatlas-base-dev libffi-dev libgdbm-dev libgfortran5 liblapack-dev libmpg123-dev libncurses5-dev libnss3-dev libopenblas-dev libssl-dev libtool openssl patch patchutils rcs swig systemtap tree universal-ctags wget xz-utils zlib1g-dev zram-tools
             mkdir -p /opt/build_python/installed
             cd /opt/build_python
             wget https://www.python.org/ftp/python/${{ matrix.python-sw }}/Python-${{ matrix.python-sw }}.tar.xz > /dev/null 2>&1
@@ -114,7 +114,7 @@ jobs:
             ln -s /opt/build_python/installed/bin/pip${{ steps.split.outputs._0 }}.${{ steps.split.outputs._1 }} /opt/build_python/installed/bin/pip3
             export PATH=$NEW_PATH
             export LD_LIBRARY_PATH=$NEW_LD_LIB_PATH
-            curl https://sh.rustup.rs -sSf | sh -s -- -y
+            curl https://sh.rustup.rs -sSf | bash -s -- -y
             cat $HOME/.cargo/env > /etc/profile.d/rust.sh
             /opt/build_python/installed/bin/python3 --version
             rustc --version

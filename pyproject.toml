@@ -4,7 +4,7 @@
 
 [tool.poetry]
     name = "arm-runner-python"
-    version = "1.2.0b0"
+    version = "1.2.0b1"
     homepage = "https://github.com/gpongelli/arm-runner-python"
     description = "ARM images with compiled Python."
     authors = ["Gabriele Pongelli <gabriele.pongelli@gmail.com>"]
@@ -39,7 +39,7 @@
 
 [tool.commitizen]
     name = "cz_conventional_commits"
-    version = "1.2.0b0"
+    version = "1.2.0b1"
     version_files = [
         "pyproject.toml:version"
     ]

@@ -1,3 +1,9 @@
+## 1.2.0b1 (2023-02-13)
+
+### Fix
+
+- use env path, export path before use of compiled python
+
 ## 1.2.0b0 (2023-02-13)
 
 ### Feat

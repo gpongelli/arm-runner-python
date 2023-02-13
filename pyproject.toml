@@ -1,0 +1,66 @@
+# SPDX-FileCopyrightText: 2023 Gabriele Pongelli
+#
+# SPDX-License-Identifier: MIT
+
+[tool.poetry]
+    name = "arm-runner-python"
+    version = "1.1.0"
+    homepage = "https://github.com/gpongelli/arm-runner-python"
+    description = "ARM images with compiled Python."
+    authors = ["Gabriele Pongelli <gabriele.pongelli@gmail.com>"]
+    readme = "README.md"
+    license =  "MIT"
+
+    classifiers=[
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
+        'Natural Language :: English',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+    ]
+    packages = [
+        { include = "arm-runner-python" }
+    ]
+
+    [tool.poetry.dependencies]
+        python = ">=3.8.0,<4.0"
+
+
+    [tool.poetry.group.devel]
+        optional = true
+        [tool.poetry.group.devel.dependencies]
+            commitizen = "^2.32.2"
+
+
+
+[tool.commitizen]
+    name = "cz_conventional_commits"
+    version = "1.1.0"
+    version_files = [
+        "pyproject.toml:version"
+    ]
+    gpg_sign = true
+    bump_message = 'Bump version: $current_version -> $new_version'
+    update_changelog_on_bump = false
+    style = [
+        ["qmark", "fg:#ff9d00 bold"],
+        ["question", "bold"],
+        ["answer", "fg:#ff9d00 bold"],
+        ["pointer", "fg:#ff9d00 bold"],
+        ["highlighted", "fg:#ff9d00 bold"],
+        ["selected", "fg:#cc5454"],
+        ["separator", "fg:#cc5454"],
+        ["instruction", ""],
+        ["text", ""],
+        ["disabled", "fg:#858585 italic"]
+    ]
+
+
+
+[build-system]
+    requires = ["setuptools", "poetry-core>=1.0.0"]
+    build-backend = "poetry.core.masonry.api"

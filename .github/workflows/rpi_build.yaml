@@ -107,6 +107,19 @@ jobs:
             ln -s /opt/build_python/installed/bin/python${{ steps.split.outputs._0 }}.${{ steps.split.outputs._1 }} /opt/build_python/installed/bin/python3
             ln -s /opt/build_python/installed/bin/python${{ steps.split.outputs._0 }}.${{ steps.split.outputs._1 }}-config /opt/build_python/installed/bin/python3-config
             ln -s /opt/build_python/installed/bin/pip${{ steps.split.outputs._0 }}.${{ steps.split.outputs._1 }} /opt/build_python/installed/bin/pip3
+            curl https://sh.rustup.rs -sSf | sh -s -- -y
+            cat $HOME/.cargo/env > /etc/profile.d/rust.sh
+            /opt/build_python/installed/bin/python3 --version
+            rustc --version
+            /opt/build_python/installed/bin/python3 -m pip install --upgrade pip
+            /opt/build_python/installed/bin/python3 -m pip install pipx
+            /opt/build_python/installed/bin/python3 -m pipx ensurepath
+            pipx ensurepath
+            echo 'export PATH=/opt/build_python/installed/bin:/opt/pipx_bin:$PATH' >> /etc/profile.d/env.sh
+            echo 'export LD_LIBRARY_PATH=/opt/build_python/installed/lib:$LD_LIBRARY_PATH' >> /etc/profile.d/env.sh
+            echo 'export CRYPTOGRAPHY_DONT_BUILD_RUST=1' >> /etc/profile.d/env.sh
+            echo '[global]' >> /etc/pip.conf
+            echo 'extra-index-url=https://www.piwheels.org/simple' >> /etc/pip.conf            
             rm -rdf /opt/build_python/Python-${{ matrix.python-sw }}.tar.xz
             rm -rdf /opt/build_python/Python-${{ matrix.python-sw }}/
             sudo apt-get autoremove --purge -y

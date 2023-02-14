@@ -1,3 +1,14 @@
+## 1.2.0b2 (2023-02-14)
+
+### Feat
+
+- use env var, split in phases
+
+### Fix
+
+- cargo home
+- install curl, use bash
+
 ## 1.2.0b1 (2023-02-13)
 
 ### Fix

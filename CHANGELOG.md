@@ -1,3 +1,9 @@
+## 1.2.1b1 (2023-02-14)
+
+### Fix
+
+- export rustc env variables
+
 ## 1.2.1b0 (2023-02-14)
 
 ### Fix

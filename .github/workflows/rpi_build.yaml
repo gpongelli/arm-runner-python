@@ -1,11 +1,16 @@
 name: Build RPI images
 on:
   push:
-    branches:
-      - 'main'
     tags:
       - '*.*.*'
   workflow_dispatch:
+
+env:
+  CARGO_PATH: "/opt/rust/cargo"
+  RUSTUP_PATH: "/opt/rust/rustup"
+  PYTHON_INSTALL_PATH: "/opt/build_python/installed/"
+  PIPX_BIN_PATH: "/opt/pipx_bin"
+
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -74,7 +79,7 @@ jobs:
           fi
 
       - name: Create release image
-        uses: pguyot/arm-runner-action@v2
+        uses: pguyot/arm-runner-action@v2.5.2
         id: arm_runner_install
         with:
           base_image: ${{ matrix.base_image }}
@@ -95,18 +100,41 @@ jobs:
             mkdir -p dist
             python3 --version
             sudo apt update
-            sudo apt install -y --no-install-recommends autoconf automake bison byacc build-essential cscope diffstat dpkg flex gcc gettext git indent intltool libasound2-dev libatlas-base-dev libffi-dev libgdbm-dev libgfortran5 liblapack-dev libmpg123-dev libncurses5-dev libnss3-dev libopenblas-dev libssl-dev libtool openssl patch patchutils rcs swig systemtap tree universal-ctags wget xz-utils zlib1g-dev zram-tools
-            mkdir -p /opt/build_python/installed
+            sudo apt install -y --no-install-recommends autoconf automake bison byacc build-essential cscope curl diffstat dpkg flex gcc gettext git indent intltool libasound2-dev libatlas-base-dev libffi-dev libgdbm-dev libgfortran5 liblapack-dev libmpg123-dev libncurses5-dev libnss3-dev libopenblas-dev libssl-dev libtool openssl patch patchutils rcs swig systemtap tree universal-ctags wget xz-utils zlib1g-dev zram-tools
+            echo "------------------ INSTALL RUST ------------------"
+            export CARGO_HOME=$CARGO_PATH
+            export RUSTUP_HOME=$RUSTUP_PATH
+            curl https://sh.rustup.rs -sSf | bash -s -- -y --no-modify-path
+            tree -Capug $CARGO_HOME
+            echo "------------------ INSTALL PYTHON ------------------"
+            mkdir -p $PYTHON_INSTALL_PATH $CARGO_PATH $RUSTUP_PATH 
             cd /opt/build_python
             wget https://www.python.org/ftp/python/${{ matrix.python-sw }}/Python-${{ matrix.python-sw }}.tar.xz > /dev/null 2>&1
             tar xvf Python-${{ matrix.python-sw }}.tar.xz > /dev/null 2>&1
             cd Python-${{ matrix.python-sw }}
-            ./configure --enable-shared --disable-test-modules --prefix=/opt/build_python/installed
+            ./configure --enable-shared --disable-test-modules --prefix=$PYTHON_INSTALL_PATH
             make -j 8 altinstall
-            tree -Capug /opt/build_python/installed
-            ln -s /opt/build_python/installed/bin/python${{ steps.split.outputs._0 }}.${{ steps.split.outputs._1 }} /opt/build_python/installed/bin/python3
-            ln -s /opt/build_python/installed/bin/python${{ steps.split.outputs._0 }}.${{ steps.split.outputs._1 }}-config /opt/build_python/installed/bin/python3-config
-            ln -s /opt/build_python/installed/bin/pip${{ steps.split.outputs._0 }}.${{ steps.split.outputs._1 }} /opt/build_python/installed/bin/pip3
+            tree -Capug $PYTHON_INSTALL_PATH
+            ln -s $PYTHON_INSTALL_PATH/bin/python${{ steps.split.outputs._0 }}.${{ steps.split.outputs._1 }} $PYTHON_INSTALL_PATH/bin/python3
+            ln -s $PYTHON_INSTALL_PATH/bin/python${{ steps.split.outputs._0 }}.${{ steps.split.outputs._1 }}-config $PYTHON_INSTALL_PATH/bin/python3-config
+            ln -s $PYTHON_INSTALL_PATH/bin/pip${{ steps.split.outputs._0 }}.${{ steps.split.outputs._1 }} $PYTHON_INSTALL_PATH/bin/pip3
+            echo "------------------ CHECK ------------------"
+            export PATH=$CARGO_PATH/bin:$PYTHON_INSTALL_PATH/bin:$PIPX_BIN_PATH:$PATH
+            export LD_LIBRARY_PATH=$PYTHON_INSTALL_PATH/lib:$LD_LIBRARY_PATH
+            source $CARGO_HOME/env
+            rustc --version
+            python3 --version
+            python3 -m pip install --upgrade pip
+            python3 -m pip install pipx
+            python3 -m pipx ensurepath
+            pipx ensurepath
+            echo "------------------ EXPORT ENV ------------------"
+            echo 'export PATH=$CARGO_PATH/bin:$PYTHON_INSTALL_PATH/bin:$PIPX_BIN_PATH:$PATH' >> /etc/profile.d/env.sh
+            echo 'export LD_LIBRARY_PATH=$PYTHON_INSTALL_PATH/lib:$LD_LIBRARY_PATH' >> /etc/profile.d/env.sh
+            echo '[global]' >> /etc/pip.conf
+            echo 'extra-index-url=https://www.piwheels.org/simple' >> /etc/pip.conf
+            cat $CARGO_HOME/env > /etc/profile.d/rust.sh
+            echo "------------------ CLEANUP ------------------"
             rm -rdf /opt/build_python/Python-${{ matrix.python-sw }}.tar.xz
             rm -rdf /opt/build_python/Python-${{ matrix.python-sw }}/
             sudo apt-get autoremove --purge -y
@@ -124,6 +152,12 @@ jobs:
 #          if-no-files-found: error
 #          retention-days: 1
 
+      # https://github.com/BinPar/read-conventional-commit-changelog
+      - name: Get Changelog Entry
+        if: startsWith(github.ref, 'refs/tags/')
+        id: changelog
+        uses: BinPar/read-conventional-commit-changelog@v2.0.2
+
       # https://github.com/softprops/action-gh-release
       - name: create github release
         if: startsWith(github.ref, 'refs/tags/')
@@ -132,7 +166,7 @@ jobs:
         with:
           token: ${{ secrets.make_gh_release_token }}
           name: ${{ steps.image_and_branch_name.outputs.RELEASE_NAME }}
-          body: RaspiOS lite images for listed ARM architectures with Python built from sourcecode.
+          body: ${{ steps.changelog.outputs.version-changelog }}
           files: ${{ steps.image_and_branch_name.outputs.IMAGE_NAME_SUFFIX }}.img.xz
           draft: false
           prerelease: false

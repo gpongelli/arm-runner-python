@@ -1,15 +1,15 @@
 name: Build RPI images
 on:
   push:
-    branches:
-      - 'main'
     tags:
       - '*.*.*'
   workflow_dispatch:
 
 env:
-  NEW_PATH: "/opt/build_python/installed/bin:/opt/pipx_bin:$PATH"
-  NEW_LD_LIB_PATH: "/opt/build_python/installed/lib:$LD_LIBRARY_PATH"
+  CARGO_PATH: "/opt/rust/cargo"
+  RUSTUP_PATH: "/opt/rust/rustup"
+  PYTHON_INSTALL_PATH: "/opt/build_python/installed/"
+  PIPX_BIN_PATH: "/opt/pipx_bin"
 
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
@@ -79,7 +79,7 @@ jobs:
           fi
 
       - name: Create release image
-        uses: pguyot/arm-runner-action@v2
+        uses: pguyot/arm-runner-action@v2.5.2
         id: arm_runner_install
         with:
           base_image: ${{ matrix.base_image }}
@@ -101,32 +101,40 @@ jobs:
             python3 --version
             sudo apt update
             sudo apt install -y --no-install-recommends autoconf automake bison byacc build-essential cscope curl diffstat dpkg flex gcc gettext git indent intltool libasound2-dev libatlas-base-dev libffi-dev libgdbm-dev libgfortran5 liblapack-dev libmpg123-dev libncurses5-dev libnss3-dev libopenblas-dev libssl-dev libtool openssl patch patchutils rcs swig systemtap tree universal-ctags wget xz-utils zlib1g-dev zram-tools
-            mkdir -p /opt/build_python/installed
+            echo "------------------ INSTALL RUST ------------------"
+            export CARGO_HOME=$CARGO_PATH
+            export RUSTUP_HOME=$RUSTUP_PATH
+            curl https://sh.rustup.rs -sSf | bash -s -- -y --no-modify-path
+            tree -Capug $CARGO_HOME
+            echo "------------------ INSTALL PYTHON ------------------"
+            mkdir -p $PYTHON_INSTALL_PATH $CARGO_PATH $RUSTUP_PATH 
             cd /opt/build_python
             wget https://www.python.org/ftp/python/${{ matrix.python-sw }}/Python-${{ matrix.python-sw }}.tar.xz > /dev/null 2>&1
             tar xvf Python-${{ matrix.python-sw }}.tar.xz > /dev/null 2>&1
             cd Python-${{ matrix.python-sw }}
-            ./configure --enable-shared --disable-test-modules --prefix=/opt/build_python/installed
+            ./configure --enable-shared --disable-test-modules --prefix=$PYTHON_INSTALL_PATH
             make -j 8 altinstall
-            tree -Capug /opt/build_python/installed
-            ln -s /opt/build_python/installed/bin/python${{ steps.split.outputs._0 }}.${{ steps.split.outputs._1 }} /opt/build_python/installed/bin/python3
-            ln -s /opt/build_python/installed/bin/python${{ steps.split.outputs._0 }}.${{ steps.split.outputs._1 }}-config /opt/build_python/installed/bin/python3-config
-            ln -s /opt/build_python/installed/bin/pip${{ steps.split.outputs._0 }}.${{ steps.split.outputs._1 }} /opt/build_python/installed/bin/pip3
-            export PATH=$NEW_PATH
-            export LD_LIBRARY_PATH=$NEW_LD_LIB_PATH
-            curl https://sh.rustup.rs -sSf | bash -s -- -y
-            cat $HOME/.cargo/env > /etc/profile.d/rust.sh
-            /opt/build_python/installed/bin/python3 --version
+            tree -Capug $PYTHON_INSTALL_PATH
+            ln -s $PYTHON_INSTALL_PATH/bin/python${{ steps.split.outputs._0 }}.${{ steps.split.outputs._1 }} $PYTHON_INSTALL_PATH/bin/python3
+            ln -s $PYTHON_INSTALL_PATH/bin/python${{ steps.split.outputs._0 }}.${{ steps.split.outputs._1 }}-config $PYTHON_INSTALL_PATH/bin/python3-config
+            ln -s $PYTHON_INSTALL_PATH/bin/pip${{ steps.split.outputs._0 }}.${{ steps.split.outputs._1 }} $PYTHON_INSTALL_PATH/bin/pip3
+            echo "------------------ CHECK ------------------"
+            export PATH=$CARGO_PATH/bin:$PYTHON_INSTALL_PATH/bin:$PIPX_BIN_PATH:$PATH
+            export LD_LIBRARY_PATH=$PYTHON_INSTALL_PATH/lib:$LD_LIBRARY_PATH
+            source $CARGO_HOME/env
             rustc --version
+            python3 --version
             python3 -m pip install --upgrade pip
             python3 -m pip install pipx
             python3 -m pipx ensurepath
             pipx ensurepath
-            echo 'export PATH=$NEW_PATH' >> /etc/profile.d/env.sh
-            echo 'export LD_LIBRARY_PATH=$NEW_LD_LIB_PATH' >> /etc/profile.d/env.sh
-            echo 'export CRYPTOGRAPHY_DONT_BUILD_RUST=1' >> /etc/profile.d/env.sh
+            echo "------------------ EXPORT ENV ------------------"
+            echo 'export PATH=$CARGO_PATH/bin:$PYTHON_INSTALL_PATH/bin:$PIPX_BIN_PATH:$PATH' >> /etc/profile.d/env.sh
+            echo 'export LD_LIBRARY_PATH=$PYTHON_INSTALL_PATH/lib:$LD_LIBRARY_PATH' >> /etc/profile.d/env.sh
             echo '[global]' >> /etc/pip.conf
-            echo 'extra-index-url=https://www.piwheels.org/simple' >> /etc/pip.conf            
+            echo 'extra-index-url=https://www.piwheels.org/simple' >> /etc/pip.conf
+            cat $CARGO_HOME/env > /etc/profile.d/rust.sh
+            echo "------------------ CLEANUP ------------------"
             rm -rdf /opt/build_python/Python-${{ matrix.python-sw }}.tar.xz
             rm -rdf /opt/build_python/Python-${{ matrix.python-sw }}/
             sudo apt-get autoremove --purge -y

@@ -1,13 +1,10 @@
 name: Build RPI images
 on:
-  push:
   workflow_dispatch:
 
 env:
   NEW_CARGO_HOME: "/opt/rust/cargo"
   NEW_RUSTUP_HOME: "/opt/rust/rustup"
-  NEW_PATH: "$PATH"
-  NEW_LD_LIB_PATH: "$LD_LIBRARY_PATH"
 
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages

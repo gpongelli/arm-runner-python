@@ -8,7 +8,7 @@ on:
 env:
   CARGO_PATH: "/opt/rust/cargo"
   RUSTUP_PATH: "/opt/rust/rustup"
-  PYTHON_INSTALL_PATH: "/opt/build_python/installed/"
+  PYTHON_INSTALL_PATH: "/opt/build_python/installed"
   PIPX_BIN_PATH: "/opt/pipx_bin"
 
 
@@ -133,7 +133,9 @@ jobs:
             echo "export LD_LIBRARY_PATH=$PYTHON_INSTALL_PATH/lib:$LD_LIBRARY_PATH" >> /etc/profile.d/env.sh
             echo "[global]" >> /etc/pip.conf
             echo "extra-index-url=https://www.piwheels.org/simple" >> /etc/pip.conf
-            cat $CARGO_HOME/env > /etc/profile.d/rust.sh
+            cat $CARGO_HOME/env >> /etc/profile.d/rust.sh
+            echo "export CARGO_HOME=$CARGO_PATH" >> /etc/profile.d/rust.sh
+            echo "export RUSTUP_HOME=$RUSTUP_PATH" >> /etc/profile.d/rust.sh
             echo "------------------ CLEANUP ------------------"
             rm -rdf /opt/build_python/Python-${{ matrix.python-sw }}.tar.xz
             rm -rdf /opt/build_python/Python-${{ matrix.python-sw }}/

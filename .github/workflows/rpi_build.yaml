@@ -129,10 +129,10 @@ jobs:
             python3 -m pipx ensurepath
             pipx ensurepath
             echo "------------------ EXPORT ENV ------------------"
-            echo 'export PATH=$CARGO_PATH/bin:$PYTHON_INSTALL_PATH/bin:$PIPX_BIN_PATH:$PATH' >> /etc/profile.d/env.sh
-            echo 'export LD_LIBRARY_PATH=$PYTHON_INSTALL_PATH/lib:$LD_LIBRARY_PATH' >> /etc/profile.d/env.sh
-            echo '[global]' >> /etc/pip.conf
-            echo 'extra-index-url=https://www.piwheels.org/simple' >> /etc/pip.conf
+            echo "export PATH=$CARGO_PATH/bin:$PYTHON_INSTALL_PATH/bin:$PIPX_BIN_PATH:$PATH" >> /etc/profile.d/env.sh
+            echo "export LD_LIBRARY_PATH=$PYTHON_INSTALL_PATH/lib:$LD_LIBRARY_PATH" >> /etc/profile.d/env.sh
+            echo "[global]" >> /etc/pip.conf
+            echo "extra-index-url=https://www.piwheels.org/simple" >> /etc/pip.conf
             cat $CARGO_HOME/env > /etc/profile.d/rust.sh
             echo "------------------ CLEANUP ------------------"
             rm -rdf /opt/build_python/Python-${{ matrix.python-sw }}.tar.xz

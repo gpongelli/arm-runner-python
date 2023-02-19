@@ -79,7 +79,7 @@ jobs:
         with:
           base_image: ${{ matrix.base_image }}
           cpu: ${{ matrix.cpu }}
-          cpu_info: ${{ matrix.cpu_info }}
+          cpu_info: rpi_cpuinfo
           shell: bash
           copy_repository_path: /opt/repo
           image_additional_mb: 4096

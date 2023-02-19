@@ -84,7 +84,7 @@ jobs:
           copy_repository_path: /opt/repo
           image_additional_mb: 4096
           commands: |
-            mkdir -p $NEW_CARGO_HOME $NEW_RUSTUP_HOME 
+            mkdir -p $NEW_CARGO_HOME $NEW_RUSTUP_HOME /opt/poetry
             sudo apt update
             sudo apt install -y --no-install-recommends autoconf automake bison byacc build-essential cscope curl diffstat dpkg flex gcc gettext git indent intltool libasound2-dev libatlas-base-dev libffi-dev libgdbm-dev libgfortran5 liblapack-dev libmpg123-dev libncurses5-dev libnss3-dev libopenblas-dev libssl-dev libtool openssl patch patchutils rcs swig systemtap tree universal-ctags wget xz-utils zlib1g-dev zram-tools
             export CARGO_HOME=$NEW_CARGO_HOME
@@ -96,6 +96,23 @@ jobs:
             find / -iname rustc
             source /etc/profile.d/rust.sh
             rustc --version
+            echo "---- install poetry ----"
+            git config --global url.git@github.com:.insteadof https://github.com/ 
+            git config --global --add url.https://github.com/rust-lang/crates.io-index.insteadof https://github.com/rust-lang/crates.io-index
+            sudo sysctl -w net.ipv6.conf.eth0.disable_ipv6=1
+            export CRYPTOGRAPHY_DONT_BUILD_RUST=1
+            export CARGO_NET_GIT_FETCH_WITH_CLI=true
+            sudo apt-get install build-essential libssl-dev libffi-dev pkg-config gcc
+            rustup update stable
+            cargo init
+            cargo clean
+            cargo fetch
+            cargo update
+            python3 --version
+            python3 -m pip install --upgrade pip
+            rm -rdf /opt/repo/poetry-*.log
+            curl -sSL https://install.python-poetry.org | POETRY_HOME=/opt/poetry python3 - --version 1.2.2
+            cat $(find /opt/repo/poetry-*.log)
+            $POETRY_HOME/bin/poetry --version
             sudo apt-get autoremove --purge -y
             sudo apt-get clean
-

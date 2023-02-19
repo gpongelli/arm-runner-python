@@ -83,6 +83,7 @@ jobs:
           shell: bash
           copy_repository_path: /opt/repo
           image_additional_mb: 4096
+          exit_on_fail: false
           commands: |
             mkdir -p $NEW_CARGO_HOME $NEW_RUSTUP_HOME /opt/poetry
             sudo apt update

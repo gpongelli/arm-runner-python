@@ -107,7 +107,7 @@ jobs:
             cargo fetch
             cargo update
             python3 --version
-            python3 -m pip install --upgrade pip
+            find / -iname pip
             rm -rdf /opt/repo/poetry-*.log
             curl -sSL https://install.python-poetry.org | POETRY_HOME=/opt/poetry python3 - --version 1.2.2
             cat $(find /opt/repo/poetry-*.log)
